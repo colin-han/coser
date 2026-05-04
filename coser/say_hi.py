@@ -58,6 +58,7 @@ def run_say_hi() -> None:
         env_dict = os.environ.copy()
         env_dict.update(profile.env)
 
+        print(f"[{profile.name}] sending hi...")
         try:
             result = subprocess.run(
                 ["claude", "-p", "hi", "--max-turns", "1"],
@@ -65,13 +66,28 @@ def run_say_hi() -> None:
                 env=env_dict,
                 timeout=60,
                 capture_output=True,
+                text=True,
             )
+            response = result.stdout.strip()
+            if response:
+                print(f"[{profile.name}] response: {response}")
+            else:
+                print(f"[{profile.name}] response: (empty)")
+
             if result.returncode != 0:
+                stderr = result.stderr.strip()
+                error_detail = f" (stderr: {stderr})" if stderr else ""
+                print(f"[{profile.name}] FAILED (exit code {result.returncode}){error_detail}")
                 failed.append(profile.name)
+            else:
+                print(f"[{profile.name}] OK")
         except subprocess.TimeoutExpired:
+            print(f"[{profile.name}] TIMEOUT")
             failed.append(f"{profile.name} (timeout)")
         except Exception as e:
+            print(f"[{profile.name}] ERROR: {str(e)}")
             failed.append(f"{profile.name} ({str(e)})")
+        print()
 
     # Print summary
     total = len(enabled_profiles)
