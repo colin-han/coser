@@ -66,6 +66,7 @@ class GlobalConfig:
     default_profile: str = ""
     enable_agent_teams: bool = False
     wifi_mapping: Dict[str, str] = field(default_factory=dict)
+    router_mapping: Dict[str, str] = field(default_factory=dict)
     fallback_chain: List[str] = field(default_factory=list)
     say_hi_workdir: str = "~/.coser/say-hi-workspace"
 
@@ -102,6 +103,7 @@ def load_global_config() -> GlobalConfig:
         data = tomllib.load(f)
 
     wifi_mapping = dict(data.get("wifi_mapping", {}))
+    router_mapping = dict(data.get("router_mapping", {}))
 
     fallback_chain_data = data.get("fallback_chain", {})
     if isinstance(fallback_chain_data, dict):
@@ -121,6 +123,7 @@ def load_global_config() -> GlobalConfig:
         default_profile=data.get("default_profile", ""),
         enable_agent_teams=data.get("enable_agent_teams", False),
         wifi_mapping=wifi_mapping,
+        router_mapping=router_mapping,
         fallback_chain=fallback_chain,
         say_hi_workdir=say_hi_workdir,
     )

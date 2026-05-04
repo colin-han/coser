@@ -38,38 +38,97 @@ class SelectionError(Exception):
 def get_wifi_ssid() -> Optional[str]:
     """Get the current WiFi SSID on macOS.
 
+    Tries networksetup first, then falls back to CoreWLAN via Swift.
+
     Returns:
         The WiFi SSID if connected, None otherwise
-
-    Note:
-        This only works on macOS with networksetup command.
-        Returns None on other platforms or if not connected to WiFi.
     """
     if sys.platform != "darwin":
         return None
 
-    try:
-        import subprocess
+    import subprocess
 
+    # Method 1: networksetup (requires Location Services for the terminal app)
+    try:
         result = subprocess.run(
             ["networksetup", "-getairportnetwork", "en0"],
             capture_output=True,
             text=True,
             timeout=5,
         )
-
         output = result.stdout.strip()
-        if not output:
-            return None
-
-        # Expected format: "Current Wi-Fi Network: SSID_NAME"
         if "Current Wi-Fi Network:" in output:
-            ssid = output.split(":", 1)[1].strip()
-            return ssid
+            return output.split(":", 1)[1].strip()
+    except Exception:
+        pass
 
-        return None
-    except (subprocess.TimeoutExpired, FileNotFoundError, Exception):
-        return None
+    # Method 2: CoreWLAN via Swift (also requires Location Services, but may
+    # work for different apps)
+    try:
+        swift_code = '''
+import CoreWLAN
+if let iface = CWWiFiClient.shared().interface(), let ssid = iface.ssid() {
+    print(ssid)
+}
+'''
+        result = subprocess.run(
+            ["swift", "-e", swift_code],
+            capture_output=True, text=True, timeout=10
+        )
+        ssid = result.stdout.strip()
+        if ssid:
+            return ssid
+    except Exception:
+        pass
+
+    return None
+
+
+def get_router_ip() -> Optional[str]:
+    """Get the default gateway/router IP address.
+
+    Returns:
+        Router IP address string, or None if unavailable
+    """
+    import subprocess
+
+    try:
+        result = subprocess.run(
+            ["ipconfig", "getpacket", "en0"],
+            capture_output=True, text=True, timeout=5
+        )
+        for line in result.stdout.splitlines():
+            if "router (ip_mult):" in line:
+                # Extract IP from: router (ip_mult): {192.168.31.1}
+                start = line.index("{") + 1
+                end = line.index("}")
+                return line[start:end]
+    except Exception:
+        pass
+    return None
+
+
+def _match_network_mapping(config: GlobalConfig) -> Optional[str]:
+    """Try to match current network to a profile using all available methods.
+
+    Tries in order:
+    1. WiFi SSID → config.wifi_mapping
+    2. Router IP → config.router_mapping (fallback)
+
+    Returns:
+        Matched profile name, or None
+    """
+    # Try WiFi SSID
+    ssid = get_wifi_ssid()
+    if ssid and ssid in config.wifi_mapping:
+        return config.wifi_mapping[ssid]
+
+    # Fallback to router IP
+    router_ip = get_router_ip()
+    if router_ip and router_ip in config.router_mapping:
+        return config.router_mapping[router_ip]
+
+    return None
 
 
 def check_profile_balance(profile: Profile) -> BalanceResult:
@@ -145,15 +204,21 @@ def auto_select(dry_run: bool = False) -> SelectionResult:
     """
     config = load_global_config()
 
-    # Step 1: Try WiFi-based selection
-    wifi_ssid = get_wifi_ssid()
-    if wifi_ssid and wifi_ssid in config.wifi_mapping:
-        profile_name = config.wifi_mapping[wifi_ssid]
+    # Step 1: Try network-based selection (SSID or router IP)
+    matched_profile = _match_network_mapping(config)
+    if matched_profile:
+        profile_name = matched_profile
         try:
             profile = load_profile(profile_name)
             balance_result = check_profile_balance(profile)
 
-            decision_path = f"WiFi SSID '{wifi_ssid}' matched to profile '{profile_name}'"
+            # Build decision path with detection method info
+            ssid = get_wifi_ssid()
+            if ssid:
+                decision_path = f"WiFi SSID '{ssid}' matched to profile '{profile_name}'"
+            else:
+                router_ip = get_router_ip()
+                decision_path = f"Router IP '{router_ip}' matched to profile '{profile_name}'"
 
             if balance_result.status == BalanceStatus.SUFFICIENT:
                 return SelectionResult(

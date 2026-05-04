@@ -187,11 +187,11 @@ def main():
     profile = load_profile(result.profile_name)
 
     if coser_args.dry_run:
-        wifi_ssid = None
-        # Re-detect for display
-        from coser.selector import get_wifi_ssid
+        from coser.selector import get_wifi_ssid, get_router_ip
         wifi_ssid = get_wifi_ssid()
-        print(f"当前 WiFi: {wifi_ssid or '(未连接)'}")
+        router_ip = get_router_ip()
+        print(f"当前 WiFi: {wifi_ssid or '(未检测到)'}")
+        print(f"当前路由器: {router_ip or '(未检测到)'}")
         print(f"决策路径: {result.decision_path}")
         if result.balance_result:
             status_label = STATUS_LABELS.get(result.balance_result.status, "未知")
