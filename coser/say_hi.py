@@ -58,6 +58,16 @@ def run_say_hi() -> None:
         env_dict = os.environ.copy()
         env_dict.update(profile.env)
 
+        # Expand proxy config
+        if profile.proxy and profile.proxy.proxy:
+            env_dict["HTTP_PROXY"] = profile.proxy.proxy
+            env_dict["HTTPS_PROXY"] = profile.proxy.proxy
+            env_dict["http_proxy"] = profile.proxy.proxy
+            env_dict["https_proxy"] = profile.proxy.proxy
+            if profile.proxy.no_proxy:
+                env_dict["NO_PROXY"] = profile.proxy.no_proxy
+                env_dict["no_proxy"] = profile.proxy.no_proxy
+
         print(f"[{profile.name}] sending hi...")
         try:
             result = subprocess.run(

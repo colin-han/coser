@@ -55,6 +55,9 @@ def print_config_info(profile, config, decision_path=""):
     if config.enable_agent_teams:
         print("  Agent Teams: 已启用")
 
+    if profile.proxy and profile.proxy.proxy:
+        print(f"  Proxy:    {profile.proxy.proxy}")
+
     haiku = profile.env.get("ANTHROPIC_DEFAULT_HAIKU_MODEL")
     if haiku:
         print(f"  Haiku  -> {haiku}")
@@ -72,6 +75,17 @@ def launch_claude(profile, extra_args, enable_agent_teams=False):
 
     if enable_agent_teams:
         os.environ["CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS"] = "1"
+
+    # Expand proxy config to standard env vars
+    if profile.proxy and profile.proxy.proxy:
+        proxy_url = profile.proxy.proxy
+        os.environ["HTTP_PROXY"] = proxy_url
+        os.environ["HTTPS_PROXY"] = proxy_url
+        os.environ["http_proxy"] = proxy_url
+        os.environ["https_proxy"] = proxy_url
+        if profile.proxy.no_proxy:
+            os.environ["NO_PROXY"] = profile.proxy.no_proxy
+            os.environ["no_proxy"] = profile.proxy.no_proxy
 
     claude_path = os.path.expanduser("~/.local/bin/claude")
     if not os.path.exists(claude_path):
@@ -102,7 +116,7 @@ def cmd_list():
     profile_names = list_profiles()
 
     if not profile_names:
-        print("No profiles found in ~/.coser/profiles/")
+        print("No profiles found in ~/.config/coser/profiles/")
         return
 
     print(f"{'Profile':<16} {'Balance':<12} {'Details'}")

@@ -1,7 +1,7 @@
 """Configuration loading module for Coser.
 
 This module provides data models and functions for loading configuration
-from TOML files in ~/.coser/ directory.
+from TOML files in ~/.config/coser/ directory.
 """
 
 import os
@@ -13,6 +13,31 @@ if sys.version_info >= (3, 11):
     import tomllib
 else:
     import tomli as tomllib
+
+
+# Whitelist of allowed environment variables in profile [env] section
+ENV_WHITELIST = {
+    "ANTHROPIC_BASE_URL",
+    "ANTHROPIC_AUTH_TOKEN",
+    "API_TIMEOUT_MS",
+    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL",
+}
+
+
+@dataclass
+class ProxyConfig:
+    """Proxy configuration for a profile.
+
+    Attributes:
+        proxy: The proxy URL (e.g., 'http://localhost:7890')
+        no_proxy: Comma-separated list of hosts to bypass proxy
+    """
+
+    proxy: str = ""
+    no_proxy: str = ""
 
 
 @dataclass
@@ -40,13 +65,15 @@ class Profile:
 
     Attributes:
         name: Profile name (derived from filename)
-        env: Dictionary of environment variables
+        env: Dictionary of environment variables (whitelisted only)
+        proxy: Optional proxy configuration
         balance: Optional balance checking configuration
         say_hi_enabled: Whether say_hi is enabled for this profile
     """
 
     name: str
     env: Dict[str, str] = field(default_factory=dict)
+    proxy: Optional[ProxyConfig] = None
     balance: Optional[BalanceConfig] = None
     say_hi_enabled: bool = False
 
@@ -68,12 +95,12 @@ class GlobalConfig:
     wifi_mapping: Dict[str, str] = field(default_factory=dict)
     router_mapping: Dict[str, str] = field(default_factory=dict)
     fallback_chain: List[str] = field(default_factory=list)
-    say_hi_workdir: str = "~/.coser/say-hi-workspace"
+    say_hi_workdir: str = "~/.config/coser/say-hi-workspace"
 
 
 def _get_coser_dir() -> str:
     """Get the Coser configuration directory path."""
-    return os.path.expanduser("~/.coser/")
+    return os.path.expanduser("~/.config/coser/")
 
 
 def _get_config_path() -> str:
@@ -87,7 +114,7 @@ def _get_profiles_dir() -> str:
 
 
 def load_global_config() -> GlobalConfig:
-    """Load global configuration from ~/.coser/config.toml.
+    """Load global configuration from ~/.config/coser/config.toml.
 
     Returns a GlobalConfig with default values if the file doesn't exist.
 
@@ -115,9 +142,9 @@ def load_global_config() -> GlobalConfig:
 
     say_hi_data = data.get("say_hi", {})
     if isinstance(say_hi_data, dict):
-        say_hi_workdir = say_hi_data.get("workdir", "~/.coser/say-hi-workspace")
+        say_hi_workdir = say_hi_data.get("workdir", "~/.config/coser/say-hi-workspace")
     else:
-        say_hi_workdir = "~/.coser/say-hi-workspace"
+        say_hi_workdir = "~/.config/coser/say-hi-workspace"
 
     return GlobalConfig(
         default_profile=data.get("default_profile", ""),
@@ -130,7 +157,7 @@ def load_global_config() -> GlobalConfig:
 
 
 def load_profile(name: str) -> Profile:
-    """Load a profile from ~/.coser/profiles/{name}.toml.
+    """Load a profile from ~/.config/coser/profiles/{name}.toml.
 
     Args:
         name: The profile name (without .toml extension)
@@ -147,11 +174,30 @@ def load_profile(name: str) -> Profile:
     if not os.path.exists(profile_path):
         raise FileNotFoundError(f"Profile not found: {name}")
 
+    if os.path.getsize(profile_path) == 0:
+        return Profile(name=name)
+
     with open(profile_path, "rb") as f:
         data = tomllib.load(f)
 
     env_data = data.get("env", {})
-    env = dict(env_data) if env_data else {}
+    env = {}
+    if env_data:
+        for key, value in env_data.items():
+            if key not in ENV_WHITELIST:
+                raise ValueError(
+                    f"Profile '{name}': env variable '{key}' is not allowed. "
+                    f"Allowed: {', '.join(sorted(ENV_WHITELIST))}"
+                )
+            env[key] = str(value)
+
+    proxy = None
+    if "proxy" in data:
+        proxy_data = data["proxy"]
+        proxy = ProxyConfig(
+            proxy=proxy_data.get("PROXY", ""),
+            no_proxy=proxy_data.get("NO_PROXY", ""),
+        )
 
     balance = None
     if "balance" in data:
@@ -172,11 +218,11 @@ def load_profile(name: str) -> Profile:
         else:
             say_hi_enabled = bool(say_hi_data)
 
-    return Profile(name=name, env=env, balance=balance, say_hi_enabled=say_hi_enabled)
+    return Profile(name=name, env=env, proxy=proxy, balance=balance, say_hi_enabled=say_hi_enabled)
 
 
 def list_profiles() -> List[str]:
-    """List all available profiles in ~/.coser/profiles/.
+    """List all available profiles in ~/.config/coser/profiles/.
 
     Returns:
         List[str]: List of profile names (without .toml extension)
