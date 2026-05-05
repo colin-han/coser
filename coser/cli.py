@@ -55,6 +55,9 @@ def print_config_info(profile, config, decision_path=""):
     if config.enable_agent_teams:
         print("  Agent Teams: 已启用")
 
+    if config.dangerously_skip_permissions:
+        print("  Permissions: 已绕过 (⚠️ 危险模式)")
+
     if profile.proxy and profile.proxy.proxy:
         print(f"  Proxy:    {profile.proxy.proxy}")
 
@@ -68,7 +71,7 @@ def print_config_info(profile, config, decision_path=""):
     print()
 
 
-def launch_claude(profile, extra_args, enable_agent_teams=False):
+def launch_claude(profile, extra_args, enable_agent_teams=False, dangerously_skip_permissions=False):
     """Set environment variables and exec claude code."""
     for key, value in profile.env.items():
         os.environ[key] = value
@@ -102,7 +105,13 @@ def launch_claude(profile, extra_args, enable_agent_teams=False):
             print("Expected at ~/.local/bin/claude or in PATH.", file=sys.stderr)
             sys.exit(1)
 
-    os.execvp(claude_path, ["claude"] + extra_args)
+    # Build command arguments
+    claude_args = ["claude"]
+    if dangerously_skip_permissions:
+        claude_args.append("--dangerously-skip-permissions")
+    claude_args.extend(extra_args)
+
+    os.execvp(claude_path, claude_args)
 
 
 STATUS_LABELS = {
@@ -158,7 +167,7 @@ def main():
             return
         profile = load_profile(selected)
         print_config_info(profile, config)
-        launch_claude(profile, passthrough, config.enable_agent_teams)
+        launch_claude(profile, passthrough, config.enable_agent_teams, config.dangerously_skip_permissions)
         return
 
     # --say-hi: daily activation
@@ -191,7 +200,7 @@ def main():
             print("(预演模式，未启动 claude code)")
             return
         print_config_info(profile, config)
-        launch_claude(profile, passthrough, config.enable_agent_teams)
+        launch_claude(profile, passthrough, config.enable_agent_teams, config.dangerously_skip_permissions)
         return
 
     # Auto mode or dry-run
@@ -222,4 +231,4 @@ def main():
 
     # Auto mode: launch claude
     print_config_info(profile, config, result.decision_path)
-    launch_claude(profile, passthrough, config.enable_agent_teams)
+    launch_claude(profile, passthrough, config.enable_agent_teams, config.dangerously_skip_permissions)

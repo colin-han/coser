@@ -64,6 +64,7 @@ enabled = true
 ```toml
 default_profile = "glm"
 enable_agent_teams = true
+# dangerously_skip_permissions = false  # 危险模式，请谨慎使用
 
 [wifi_mapping]
 "CompanyWiFi" = "bailian"

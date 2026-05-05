@@ -118,6 +118,10 @@ enable_agent_teams = true
 #   - CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
 #   - CLAUDE_PROFILE="{profile_name} (with agent teams)"
 
+# 绕过所有权限确认（危险模式，默认关闭）
+# dangerously_skip_permissions = false
+# 启用后会传递 --dangerously-skip-permissions 参数给 claude
+
 # WiFi SSID → profile 映射（需要终端有定位权限）
 [wifi_mapping]
 "CompanyWiFi" = "bailian"

@@ -85,6 +85,7 @@ class GlobalConfig:
     Attributes:
         default_profile: The default profile to use when no rules match
         enable_agent_teams: Whether to enable agent teams feature
+        dangerously_skip_permissions: Whether to bypass all permission prompts
         wifi_mapping: Dictionary mapping WiFi SSIDs to profile names
         fallback_chain: Ordered list of profile names to try as fallback
         say_hi_workdir: Working directory for say_hi feature
@@ -92,6 +93,7 @@ class GlobalConfig:
 
     default_profile: str = ""
     enable_agent_teams: bool = False
+    dangerously_skip_permissions: bool = False
     wifi_mapping: Dict[str, str] = field(default_factory=dict)
     router_mapping: Dict[str, str] = field(default_factory=dict)
     fallback_chain: List[str] = field(default_factory=list)
@@ -149,6 +151,7 @@ def load_global_config() -> GlobalConfig:
     return GlobalConfig(
         default_profile=data.get("default_profile", ""),
         enable_agent_teams=data.get("enable_agent_teams", False),
+        dangerously_skip_permissions=data.get("dangerously_skip_permissions", False),
         wifi_mapping=wifi_mapping,
         router_mapping=router_mapping,
         fallback_chain=fallback_chain,

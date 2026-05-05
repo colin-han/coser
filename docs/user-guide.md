@@ -104,6 +104,7 @@ enabled = true
 ```toml
 default_profile = "glm"
 enable_agent_teams = true
+# dangerously_skip_permissions = false  # 危险模式，请谨慎使用
 
 # WiFi SSID → profile 映射（需要终端有定位权限）
 [wifi_mapping]
@@ -128,6 +129,7 @@ workdir = "~/.coser/say-hi-workspace"
 |------|------|------|
 | `default_profile` | 否 | 兜底 profile 名称 |
 | `enable_agent_teams` | 否 | `true` 启动时自动注入 `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` 和 `CLAUDE_PROFILE="{name} (with agent teams)"`；否则仅注入 `CLAUDE_PROFILE="{name}"` |
+| `dangerously_skip_permissions` | 否 | `true` 启动时传递 `--dangerously-skip-permissions` 参数给 claude（⚠️ 危险模式，会绕过所有权限确认） |
 | `wifi_mapping` | 否 | SSID → profile 映射表（需要定位权限） |
 | `router_mapping` | 否 | 路由器 IP → profile 映射表（无需额外权限） |
 | `fallback_chain.profiles` | 否 | 有序 profile 列表，用于余额 fallback |
