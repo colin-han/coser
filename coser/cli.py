@@ -75,6 +75,9 @@ def launch_claude(profile, extra_args, enable_agent_teams=False):
 
     if enable_agent_teams:
         os.environ["CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS"] = "1"
+        os.environ["CLAUDE_PROFILE"] = f"{profile.name} (with agent teams)"
+    else:
+        os.environ["CLAUDE_PROFILE"] = profile.name
 
     # Expand proxy config to standard env vars
     if profile.proxy and profile.proxy.proxy:

@@ -42,6 +42,8 @@ Coser 是一个 Claude Code 账户自动切换工具，能够根据当前环境�
 | `ANTHROPIC_DEFAULT_SONNET_MODEL` | 覆盖 Sonnet 模型名称 |
 | `ANTHROPIC_DEFAULT_OPUS_MODEL` | 覆盖 Opus 模型名称 |
 
+> **注意**：`CLAUDE_PROFILE` 环境变量由程序自动设置，标识当前使用的 profile 名称。启用 agent teams 时值为 `"{name} (with agent teams)"`，否则为 `"{name}"`。 |
+
 不在白名单中的变量会导致加载报错。
 
 #### `[proxy]` — 代理配置（可选）
@@ -112,6 +114,9 @@ default_profile = "glm"
 
 # 自动启用 Agent Teams（默认关闭）
 enable_agent_teams = true
+# 启用后会注入两个环境变量：
+#   - CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
+#   - CLAUDE_PROFILE="{profile_name} (with agent teams)"
 
 # WiFi SSID → profile 映射（需要终端有定位权限）
 [wifi_mapping]

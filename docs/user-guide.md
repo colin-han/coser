@@ -34,6 +34,8 @@
 | `ANTHROPIC_DEFAULT_SONNET_MODEL` | 覆盖 Sonnet 模型名称 |
 | `ANTHROPIC_DEFAULT_OPUS_MODEL` | 覆盖 Opus 模型名称 |
 
+> **注意**：`CLAUDE_PROFILE` 环境变量由程序自动设置，标识当前使用的 profile 名称。启用 agent teams 时值为 `"{name} (with agent teams)"`，否则为 `"{name}"`。 |
+
 #### `[proxy]` — 代理配置（可选）
 
 只需配置两个变量，程序自动展开为标准代理环境变量：
@@ -125,7 +127,7 @@ workdir = "~/.coser/say-hi-workspace"
 | 字段 | 必填 | 说明 |
 |------|------|------|
 | `default_profile` | 否 | 兜底 profile 名称 |
-| `enable_agent_teams` | 否 | `true` 启动时自动注入 `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` |
+| `enable_agent_teams` | 否 | `true` 启动时自动注入 `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` 和 `CLAUDE_PROFILE="{name} (with agent teams)"`；否则仅注入 `CLAUDE_PROFILE="{name}"` |
 | `wifi_mapping` | 否 | SSID → profile 映射表（需要定位权限） |
 | `router_mapping` | 否 | 路由器 IP → profile 映射表（无需额外权限） |
 | `fallback_chain.profiles` | 否 | 有序 profile 列表，用于余额 fallback |

@@ -10,6 +10,7 @@ Claude cOde SwitchER — Claude Code 账户自动切换工具。
 - **余额监控** — 内置支持智谱 (GLM)、DeepSeek 余额查询，三级状态（充足/不足/用完）
 - **交互式选择** — `--select` 提供 fzf 风格的键盘导航，实时显示各 profile 余额
 - **代理支持** — profile 中配置代理，自动展开为标准环境变量
+- **Profile 标识** — 自动设置 `CLAUDE_PROFILE` 环境变量标识当前使用的 profile
 - **每日激活** — 定时发送 `hi` 激活限额周期，失败时推送 macOS 系统通知
 
 ## 安装
