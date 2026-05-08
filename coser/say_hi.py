@@ -51,6 +51,13 @@ def run_say_hi() -> None:
     workdir = os.path.expanduser(config.say_hi_workdir)
     os.makedirs(workdir, exist_ok=True)
 
+    # Resolve claude binary path (cron has minimal PATH)
+    claude_bin = shutil.which("claude") or os.path.expanduser("~/.local/bin/claude")
+    if not os.path.exists(claude_bin):
+        print(f"Error: claude binary not found at {claude_bin}")
+        send_notification("Coser", f"找不到 claude 可执行文件: {claude_bin}")
+        return
+
     # Run say-hi for each profile
     failed = []
     for profile in enabled_profiles:
@@ -71,7 +78,7 @@ def run_say_hi() -> None:
         print(f"[{profile.name}] sending hi...")
         try:
             result = subprocess.run(
-                ["claude", "-p", "hi", "--max-turns", "1"],
+                [claude_bin, "-p", "hi", "--max-turns", "1"],
                 cwd=workdir,
                 env=env_dict,
                 timeout=60,
