@@ -15,10 +15,22 @@ Claude cOde SwitchER — Claude Code 账户自动切换工具。
 
 ## 安装
 
+推荐使用 `pipx` 安装，避免污染系统 Python 环境，并保证 cron 等非交互场景下 `coser` 可执行文件路径稳定（位于 `~/.local/bin/coser`）。
+
 ```bash
 git clone <repo-url> && cd coser
-pip install -e .
+pipx install .
 ```
+
+更新已安装版本：
+
+```bash
+pipx install --force .
+```
+
+> 不建议使用 `pip install -e .`：cron 在极简 PATH 下可能找不到 `coser`，且 Homebrew Python 通常禁止全局 pip 安装。
+>
+> 如果未安装 pipx，可在已有 venv 中用 `python -m pip install --force-reinstall --no-deps .` 直接覆盖现有包。
 
 安装后可选：`alias claude=coser`
 
