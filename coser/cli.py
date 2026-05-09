@@ -3,12 +3,21 @@
 import argparse
 import os
 import sys
+from importlib.metadata import version, PackageNotFoundError
 
 from coser.config import GlobalConfig, Profile, load_global_config, load_profile, list_profiles
 from coser.selector import auto_select, check_profile_balance, SelectionError
 from coser.balance import BalanceStatus
 from coser.tui.select import interactive_select
 from coser.say_hi import run_say_hi, install_cron, uninstall_cron
+
+
+def get_version():
+    """Return coser package version, or 'unknown' if not installed."""
+    try:
+        return version("coser")
+    except PackageNotFoundError:
+        return "unknown"
 
 
 def parse_args(argv):
@@ -147,6 +156,7 @@ def cmd_list():
 def main():
     """Main entry point."""
     coser_args, passthrough = parse_args(sys.argv[1:])
+    print(f"coser v{get_version()}")
     config = load_global_config()
 
     # --list: show all profiles with balance
