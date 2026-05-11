@@ -112,5 +112,13 @@ def create_checker(
             low_below=low_below,
             **kwargs
         )
+    elif provider_lower == "claude":
+        from coser.balance.claude import ClaudeChecker
+        return ClaudeChecker(
+            api_key=api_key,
+            exhausted_below=exhausted_below,
+            low_below=low_below,
+            **kwargs
+        )
     else:
-        raise ValueError(f"Unsupported provider: {provider}. Supported: 'zhipu', 'deepseek'")
+        raise ValueError(f"Unsupported provider: {provider}. Supported: 'zhipu', 'deepseek', 'claude'")

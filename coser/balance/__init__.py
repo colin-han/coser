@@ -6,6 +6,7 @@ Provides balance checking functionality for multiple API providers:
 """
 
 from coser.balance.base import BalanceChecker, BalanceResult, BalanceStatus, create_checker
+from coser.balance.claude import ClaudeChecker
 from coser.balance.deepseek import DeepSeekChecker
 from coser.balance.zhipu import ZhipuChecker
 
@@ -16,4 +17,5 @@ __all__ = [
     "create_checker",
     "ZhipuChecker",
     "DeepSeekChecker",
+    "ClaudeChecker",
 ]

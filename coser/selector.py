@@ -150,21 +150,27 @@ def check_profile_balance(profile: Profile) -> BalanceResult:
             display_text="Balance checking not configured",
         )
 
-    # Resolve API key from profile environment
-    api_key = profile.env.get(profile.balance.api_key_ref)
-    if not api_key:
-        return BalanceResult(
-            status=BalanceStatus.UNKNOWN,
-            raw_value=None,
-            display_text=f"API key not found: {profile.balance.api_key_ref}",
-            error=f"Environment variable '{profile.balance.api_key_ref}' not set in profile",
-        )
+    provider = profile.balance.provider.lower()
+
+    # Claude provider reads OAuth token from keychain, no api_key_ref required.
+    api_key = ""
+    if provider != "claude":
+        api_key = profile.env.get(profile.balance.api_key_ref) or ""
+        if not api_key:
+            return BalanceResult(
+                status=BalanceStatus.UNKNOWN,
+                raw_value=None,
+                display_text=f"API key not found: {profile.balance.api_key_ref}",
+                error=f"Environment variable '{profile.balance.api_key_ref}' not set in profile",
+            )
 
     # Create checker and perform balance check
     try:
         kwargs = {}
         if profile.balance.monitor:
             kwargs["monitor"] = profile.balance.monitor
+        if provider == "claude" and profile.proxy and profile.proxy.proxy:
+            kwargs["proxy"] = profile.proxy.proxy
 
         checker = create_checker(
             provider=profile.balance.provider,
