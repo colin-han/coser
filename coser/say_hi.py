@@ -5,6 +5,7 @@ Daily activation (say-hi) functionality with cron management.
 import os
 import shutil
 import subprocess
+from datetime import datetime
 from typing import List
 
 from coser.config import load_global_config, list_profiles, load_profile
@@ -33,6 +34,7 @@ def run_say_hi() -> None:
     and runs 'claude -p hi --max-turns 1' for each with their env.
     Sends notification on failure only.
     """
+    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] say-hi 开始")
     config = load_global_config()
     profile_names = list_profiles()
 
