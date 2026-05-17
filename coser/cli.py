@@ -34,6 +34,7 @@ def parse_args(argv):
     parser.add_argument("--say-hi", action="store_true")
     parser.add_argument("--install-cron", action="store_true")
     parser.add_argument("--uninstall-cron", action="store_true")
+    parser.add_argument("--tap", action="store_true")
 
     coser_args, passthrough = parser.parse_known_args(argv)
     return coser_args, passthrough
@@ -80,7 +81,7 @@ def print_config_info(profile, config, decision_path=""):
     print()
 
 
-def launch_claude(profile, extra_args, enable_agent_teams=False, dangerously_skip_permissions=False):
+def launch_claude(profile, extra_args, enable_agent_teams=False, dangerously_skip_permissions=False, tap=False):
     """Set environment variables and exec claude code."""
     for key, value in profile.env.items():
         os.environ[key] = value
@@ -102,10 +103,54 @@ def launch_claude(profile, extra_args, enable_agent_teams=False, dangerously_ski
             os.environ["NO_PROXY"] = profile.proxy.no_proxy
             os.environ["no_proxy"] = profile.proxy.no_proxy
 
+    import shutil
+
+    if tap:
+        binary_name = "claude-tap"
+        binary_path = shutil.which(binary_name)
+        if not binary_path:
+            print(f"Error: '{binary_name}' binary not found in PATH.", file=sys.stderr)
+            sys.exit(1)
+
+        tap_value_flags = {
+            "--tap-client", "--tap-target", "--tap-live-port",
+            "--tap-output-dir", "--tap-port", "--tap-host",
+            "--tap-max-traces", "--tap-proxy-mode",
+        }
+
+        # Split extra args: --tap-* go to claude-tap, the rest go to claude after `--`.
+        tap_args = []
+        claude_passthrough = []
+        i = 0
+        while i < len(extra_args):
+            arg = extra_args[i]
+            if arg.startswith("--tap-"):
+                tap_args.append(arg)
+                # If flag takes a value and is not given as --flag=value, consume next token.
+                flag_name = arg.split("=", 1)[0]
+                if "=" not in arg and flag_name in tap_value_flags and i + 1 < len(extra_args):
+                    tap_args.append(extra_args[i + 1])
+                    i += 2
+                    continue
+            else:
+                claude_passthrough.append(arg)
+            i += 1
+
+        if dangerously_skip_permissions:
+            claude_passthrough.insert(0, "--dangerously-skip-permissions")
+
+        cmd_args = [binary_name, "--tap-live"]
+        cmd_args.extend(tap_args)
+        if claude_passthrough:
+            cmd_args.append("--")
+            cmd_args.extend(claude_passthrough)
+
+        os.execvp(binary_path, cmd_args)
+        return
+
     claude_path = os.path.expanduser("~/.local/bin/claude")
     if not os.path.exists(claude_path):
         # Fallback: try PATH
-        import shutil
         claude_in_path = shutil.which("claude")
         if claude_in_path:
             claude_path = claude_in_path
@@ -177,7 +222,7 @@ def main():
             return
         profile = load_profile(selected)
         print_config_info(profile, config)
-        launch_claude(profile, passthrough, config.enable_agent_teams, config.dangerously_skip_permissions)
+        launch_claude(profile, passthrough, config.enable_agent_teams, config.dangerously_skip_permissions, coser_args.tap)
         return
 
     # --say-hi: daily activation
@@ -210,7 +255,7 @@ def main():
             print("(预演模式，未启动 claude code)")
             return
         print_config_info(profile, config)
-        launch_claude(profile, passthrough, config.enable_agent_teams, config.dangerously_skip_permissions)
+        launch_claude(profile, passthrough, config.enable_agent_teams, config.dangerously_skip_permissions, coser_args.tap)
         return
 
     # Auto mode or dry-run
@@ -241,4 +286,4 @@ def main():
 
     # Auto mode: launch claude
     print_config_info(profile, config, result.decision_path)
-    launch_claude(profile, passthrough, config.enable_agent_teams, config.dangerously_skip_permissions)
+    launch_claude(profile, passthrough, config.enable_agent_teams, config.dangerously_skip_permissions, coser_args.tap)
