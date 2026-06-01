@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "coser"
-version = "0.5.0"
+version = "0.5.1"
 description = "Claude Code account switching CLI"
 requires-python = ">=3.9"
 dependencies = [
