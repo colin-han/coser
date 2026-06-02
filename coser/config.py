@@ -31,6 +31,7 @@ ENV_WHITELIST = {
     "OTEL_EXPORTER_OTLP_ENDPOINT",
     "OTEL_RESOURCE_ATTRIBUTES",
     "OTEL_SERVICE_NAME",
+    "OTEL_LOG_USER_PROMPTS",
 }
 
 
@@ -195,10 +196,12 @@ def load_profile(name: str) -> Profile:
     if env_data:
         for key, value in env_data.items():
             if key not in ENV_WHITELIST:
-                raise ValueError(
-                    f"Profile '{name}': env variable '{key}' is not allowed. "
-                    f"Allowed: {', '.join(sorted(ENV_WHITELIST))}"
+                print(
+                    f"警告: Profile '{name}': 不支持的环境变量 '{key}'，已忽略。"
+                    f"支持的变量: {', '.join(sorted(ENV_WHITELIST))}",
+                    file=sys.stderr,
                 )
+                continue
             env[key] = str(value)
 
     proxy = None

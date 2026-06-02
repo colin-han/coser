@@ -44,7 +44,7 @@ Coser 是一个 Claude Code 账户自动切换工具，能够根据当前环境�
 
 > **注意**：`CLAUDE_PROFILE` 环境变量由程序自动设置，标识当前使用的 profile 名称。启用 agent teams 时值为 `"{name} (with agent teams)"`，否则为 `"{name}"`。 |
 
-不在白名单中的变量会导致加载报错。
+不在白名单中的变量会被忽略并打印警告，不会导致加载报错。
 
 #### `[proxy]` — 代理配置（可选）
 

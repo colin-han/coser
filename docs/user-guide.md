@@ -22,7 +22,7 @@
 
 #### `[env]` — 环境变量（白名单制）
 
-仅允许以下变量，其他变量会导致加载报错：
+仅允许以下变量，其他变量会被忽略并在 stderr 打印警告（不会导致加载失败）：
 
 | 变量 | 说明 |
 |------|------|
@@ -33,6 +33,14 @@
 | `ANTHROPIC_DEFAULT_HAIKU_MODEL` | 覆盖 Haiku 模型名称 |
 | `ANTHROPIC_DEFAULT_SONNET_MODEL` | 覆盖 Sonnet 模型名称 |
 | `ANTHROPIC_DEFAULT_OPUS_MODEL` | 覆盖 Opus 模型名称 |
+| `CLAUDE_CODE_ENABLE_TELEMETRY` | 启用遥测 |
+| `OTEL_METRICS_EXPORTER` | OTel 指标导出器 |
+| `OTEL_LOGS_EXPORTER` | OTel 日志导出器 |
+| `OTEL_EXPORTER_OTLP_PROTOCOL` | OTLP 协议 |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | OTLP 端点 |
+| `OTEL_RESOURCE_ATTRIBUTES` | OTel 资源属性 |
+| `OTEL_SERVICE_NAME` | OTel 服务名 |
+| `OTEL_LOG_USER_PROMPTS` | 是否在遥测日志中记录用户 prompt |
 
 > **注意**：`CLAUDE_PROFILE` 环境变量由程序自动设置，标识当前使用的 profile 名称。启用 agent teams 时值为 `"{name} (with agent teams)"`，否则为 `"{name}"`。 |
 
@@ -304,7 +312,7 @@ A: fallback 链全部跳过后，使用 `default_profile`，并显示警告。
 
 **Q: `[env]` 中配置了不在白名单中的变量会怎样？**
 
-A: 加载 profile 时会报错，列出允许的变量名。
+A: 该变量会被忽略，并在 stderr 打印一条警告（列出支持的变量名），加载流程继续，不会失败退出。
 
 **Q: 代理配置怎么用？**
 
