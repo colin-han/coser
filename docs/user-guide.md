@@ -41,6 +41,8 @@
 | `OTEL_RESOURCE_ATTRIBUTES` | OTel 资源属性 |
 | `OTEL_SERVICE_NAME` | OTel 服务名 |
 | `OTEL_LOG_USER_PROMPTS` | 是否在遥测日志中记录用户 prompt |
+| `CLAUDE_CODE_AUTO_COMPACT_WINDOW` | 自动压缩的上下文窗口大小（毫秒） |
+| `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` | 自动压缩触发的百分比阈值 |
 
 > **注意**：`CLAUDE_PROFILE` 环境变量由程序自动设置，标识当前使用的 profile 名称。启用 agent teams 时值为 `"{name} (with agent teams)"`，否则为 `"{name}"`。 |
 
@@ -90,6 +92,8 @@ CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC = "1"
 ANTHROPIC_DEFAULT_HAIKU_MODEL = "glm-4.5-air"
 ANTHROPIC_DEFAULT_SONNET_MODEL = "glm-5-turbo"
 ANTHROPIC_DEFAULT_OPUS_MODEL = "glm-5"
+CLAUDE_CODE_AUTO_COMPACT_WINDOW = "180000"
+CLAUDE_AUTOCOMPACT_PCT_OVERRIDE = "90"
 
 [proxy]
 PROXY = "http://localhost:7890"
