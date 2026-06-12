@@ -73,7 +73,10 @@ class ZhipuChecker(BalanceChecker):
 
             # Build display for all limits, find the lowest remaining
             # API returns percentage as usage (0-100 scale), need to compute remaining
+            monitor_type = self.monitor_config.get("type")
+
             parts = []
+            decision_parts = []
             min_remaining = 1.0  # ratio 0-1
             for limit in limits:
                 usage_pct = limit.get("percentage")
@@ -82,12 +85,35 @@ class ZhipuChecker(BalanceChecker):
                 remaining_pct = 100.0 - usage_pct
                 if remaining_pct < 0:
                     remaining_pct = 0
-                remaining_ratio = remaining_pct / 100.0
-                if remaining_ratio < min_remaining:
-                    min_remaining = remaining_ratio
                 unit_code = limit.get("unit", 0)
                 label = UNIT_LABELS.get(unit_code, f"unit={unit_code}")
                 parts.append(f"{label}: {remaining_pct:.0f}%")
+
+                # Only use limits matching monitor_config.type for balance decision.
+                # This excludes MCP quotas when checking GLM profile balance.
+                limit_type = limit.get("type")
+                if monitor_type and limit_type != monitor_type:
+                    continue
+
+                remaining_ratio = remaining_pct / 100.0
+                if remaining_ratio < min_remaining:
+                    min_remaining = remaining_ratio
+                decision_parts.append(f"{label}: {remaining_pct:.0f}%")
+
+            # If no limits matched the monitor type filter, fall back to all limits
+            if not decision_parts and parts:
+                # Recalculate min_remaining from all limits
+                min_remaining = 1.0
+                for limit in limits:
+                    usage_pct = limit.get("percentage")
+                    if usage_pct is None:
+                        continue
+                    remaining_pct = 100.0 - usage_pct
+                    if remaining_pct < 0:
+                        remaining_pct = 0
+                    remaining_ratio = remaining_pct / 100.0
+                    if remaining_ratio < min_remaining:
+                        min_remaining = remaining_ratio
 
             display_text = ", ".join(parts) if parts else "无数据"
             status = self.classify(min_remaining)
