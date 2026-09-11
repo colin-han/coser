@@ -76,6 +76,7 @@ def print_config_info(profile, config, decision_path=""):
         print(f"  Haiku  -> {haiku}")
         print(f"  Sonnet -> {profile.env.get('ANTHROPIC_DEFAULT_SONNET_MODEL', '(默认)')}")
         print(f"  Opus   -> {profile.env.get('ANTHROPIC_DEFAULT_OPUS_MODEL', '(默认)')}")
+        print(f"  Fable  -> {profile.env.get('ANTHROPIC_DEFAULT_FABLE_MODEL', '(默认)')}")
 
     print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
     print()
