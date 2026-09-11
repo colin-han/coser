@@ -42,8 +42,8 @@ Coser 是一个 Claude Code 账户自动切换工具，能够根据当前环境�
 | `ANTHROPIC_DEFAULT_SONNET_MODEL` | 覆盖 Sonnet 模型名称 |
 | `ANTHROPIC_DEFAULT_OPUS_MODEL` | 覆盖 Opus 模型名称 |
 | `ANTHROPIC_DEFAULT_FABLE_MODEL` | 覆盖 Fable 模型名称 |
-| `CLAUDE_CODE_AUTO_COMPACT_WINDOW` | 自动压缩的上下文窗口大小（毫秒） |
-| `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` | 自动压缩触发的百分比阈值 |
+| `CLAUDE_CODE_AUTO_COMPACT_WINDOW` | 自动压缩窗口大小，单位 token（100000~1000000，仅接受纯整数），实际值不超过模型上下文窗口 |
+| `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` | 自动压缩触发的百分比阈值（1~100），只能提前触发，高于默认阈值的值会被忽略 |
 
 > **注意**：`CLAUDE_PROFILE` 环境变量由程序自动设置，标识当前使用的 profile 名称。启用 agent teams 时值为 `"{name} (with agent teams)"`，否则为 `"{name}"`。 |
 

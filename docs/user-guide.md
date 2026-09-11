@@ -41,8 +41,8 @@
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | OTLP 端点 |
 | `OTEL_RESOURCE_ATTRIBUTES` | OTel 资源属性 |
 | `OTEL_LOG_USER_PROMPTS` | 是否在遥测日志中记录用户 prompt |
-| `CLAUDE_CODE_AUTO_COMPACT_WINDOW` | 自动压缩的上下文窗口大小（毫秒） |
-| `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` | 自动压缩触发的百分比阈值 |
+| `CLAUDE_CODE_AUTO_COMPACT_WINDOW` | 自动压缩窗口大小，单位 token（100000~1000000，仅接受纯整数），实际值不超过模型上下文窗口 |
+| `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE` | 自动压缩触发的百分比阈值（1~100），只能提前触发，高于默认阈值的值会被忽略 |
 
 > **注意**：`CLAUDE_PROFILE` 环境变量由程序自动设置，标识当前使用的 profile 名称。启用 agent teams 时值为 `"{name} (with agent teams)"`，否则为 `"{name}"`。 |
 
